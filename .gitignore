@@ -1,0 +1,3 @@
+*.pyc
+polsoc_request_manager/polsoc.debug.log
+polsoc_request_manager/polsoc.sqlite3

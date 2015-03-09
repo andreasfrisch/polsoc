@@ -1,0 +1,26 @@
+<html>
+<head>
+</head>
+<body>
+	<h1>Polsoc v2</h1>
+	<hr/>
+	<h3>New request:</h3>
+	<form method="post" action="">
+	{% csrf_token %}
+	<table>
+	{{ requestForm }}
+	</table>
+	<input type="submit" value="Submit Form"/>
+	</form>
+	<hr/>
+	<h3>Current Requests:</h3>
+	<ul>
+	{% for request in requests %}
+		<li>
+			{{ request.query_name }} ({{request.facebook_id}}) [{{request.from_date}} - {{request.to_date}}]
+			{% if request.has_been_processed %}<a href="{{request.filename}}">get CSV</a>{% else %}queued{%endif%}
+		</li>
+	{% endfor %}
+	</ul>
+</body>
+</html>
