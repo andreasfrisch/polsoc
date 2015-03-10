@@ -55,7 +55,7 @@ def getNextInQueue(request):
     next_request = PolsocRequest.objects.filter(has_been_processed=False)[0]
     return JsonResponse(transformRequestToJson(next_request), safe=False)
     
-def completed(request, request_id):
+def markAsCompleted(request, request_id):
     request_object = None
     try:
         request_object = PolsocRequest.objects.get(id=request_id)
@@ -70,7 +70,7 @@ def getDownloadedRequests(request):
     downloaded_requests = PolsocRequest.objects.filter(has_been_downloaded=True)
     return JsonResponse(map(transformRequestToJson, downloaded_requests), safe=False)
 
-def removed(request, request_id):
+def markAsRemoved(request, request_id):
     request_object = None
     try:
         request_object = PolsocRequest.objects.get(id=request_id)

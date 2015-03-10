@@ -23,6 +23,7 @@ class PolsocRequestForm(ModelForm):
         fields = [
             'query_name',
             'facebook_id',
+            'facebook_access_token',
             'from_date',
             'to_date',
             'include_comments'
