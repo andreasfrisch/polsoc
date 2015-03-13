@@ -8,8 +8,7 @@ import logging
 polsoc_logger = logging.getLogger("polsoc")
 
 def generateFilenameFromForm(form):
-    return "stub"
-    #return "%s/%s_[%s-%s]" % (OUTPUT_FOLDER, form.query_name, form.from_date, form.to_date)
+    return "%s/%s_[%s-%s]" % (OUTPUT_FOLDER, form["query_name"], form["from_date"], form["to_date"])
 
 def home(request):
     if request.method == "POST":
@@ -52,7 +51,10 @@ def transformRequestToJson(request):
     }
 
 def getNextInQueue(request):
-    next_request = PolsocRequest.objects.filter(has_been_processed=False)[0]
+    next_request = {}
+    unprocessed = PolsocRequest.objects.filter(has_been_processed=False)
+    if len(unprocessed) > 0:
+        next_request = unprocessed[0]
     return JsonResponse(transformRequestToJson(next_request), safe=False)
     
 def markAsCompleted(request, request_id):
