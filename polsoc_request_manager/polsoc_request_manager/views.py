@@ -8,7 +8,8 @@ import logging
 polsoc_logger = logging.getLogger("polsoc")
 
 def generateFilenameFromForm(form):
-    return "%s/%s_[%s-%s]" % (OUTPUT_FOLDER, form.query_name, form.from_date, form.to_date)
+    return "stub"
+    #return "%s/%s_[%s-%s]" % (OUTPUT_FOLDER, form.query_name, form.from_date, form.to_date)
 
 def home(request):
     if request.method == "POST":

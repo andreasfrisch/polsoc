@@ -96,8 +96,10 @@
 	
 	<h3>Facebook Status:</h3>
 	<p>It is necessary to be logged in to facebook, in order to generate the best possible results</p>
-	<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-	</fb:login-button>
+	<div id="fb-root">
+		<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+		</fb:login-button>
+	</div>
 	<div id="status">
 	</div>
 	<hr/>
