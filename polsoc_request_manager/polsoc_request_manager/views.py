@@ -16,7 +16,6 @@ def home(request):
         form = PolsocRequestForm(request.POST)
         if form.is_valid():
             new_request = form.save(commit=False)
-            new_request.facebook_access_token = "testehest1234!" # fix to read from page
             new_request.filename = generateFilenameFromForm(form)
             new_request.save()
             return redirect("home")            
