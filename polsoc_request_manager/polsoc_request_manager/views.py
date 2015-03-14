@@ -15,7 +15,7 @@ def home(request):
         form = PolsocRequestForm(request.POST)
         if form.is_valid():
             new_request = form.save(commit=False)
-            new_request.filename = generateFilenameFromForm(form)
+            new_request.filename = generateFilenameFromForm(request.POST)
             new_request.save()
             return redirect("home")            
         else:
@@ -51,7 +51,7 @@ def transformRequestToJson(request):
     }
 
 def getNextInQueue(request):
-    next_request = {}
+    next_request = {    }
     unprocessed = PolsocRequest.objects.filter(has_been_processed=False)
     if len(unprocessed) > 0:
         next_request = unprocessed[0]
