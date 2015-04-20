@@ -3,15 +3,19 @@ from django.http import JsonResponse
 from django.utils.dateformat import format
 from polsoc_request_manager.models import PolsocRequest, PolsocRequestForm
 from polsoc_request_manager.settings import OUTPUT_FOLDER
+from django.views.decorators.csrf import csrf_exempt
 
 import logging
 polsoc_logger = logging.getLogger("polsoc")
 
 def generateFilenameFromForm(form):
-    return "%s/%s_[%s-%s]" % (OUTPUT_FOLDER, form["query_name"], form["from_date"], form["to_date"])
+    return "%s/%s_[%s-%s].csv" % (OUTPUT_FOLDER, form["query_name"], form["from_date"].replace('/','.'), form["to_date"].replace('/','.'))
 
+@csrf_exempt
 def home(request):
+    polsoc_logger.debug("HOME REACHED")
     if request.method == "POST":
+        polsoc_logger.debug("POST for new request")
         form = PolsocRequestForm(request.POST)
         if form.is_valid():
             new_request = form.save(commit=False)
@@ -20,6 +24,7 @@ def home(request):
             return redirect("home")            
         else:
             #TODO Handle it!
+            polsoc_logger.debug("INVALID FORM")
             return redirect("home")
     else:
         context = {}
@@ -32,12 +37,15 @@ def serveFile(request, request_id):
     try:
         polsoc_request = PolsocRequest.objects.get(id=request_id)
     except Exception as error:
-        polsoc_logger("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
+        polsoc_logger.debug("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
         return HttpResponse(500)
     polsoc_request.has_been_downloaded = True
     polsoc_request.save()
-    # TODO: actually serve the file
-    return HttpResponse(200)
+
+    fsock = open(polsoc_request.filename, 'r')
+    response = HttpResponse(fsock, content_type='text/csv')
+    response['Content-Disposition'] = "attachment; filename=%s.csv" % polsoc_request.query_name
+    return response
 
 def transformRequestToJson(request):
     return {
@@ -63,7 +71,7 @@ def markAsCompleted(request, request_id):
     try:
         request_object = PolsocRequest.objects.get(id=request_id)
     except Exception as error:
-        polsoc_logger("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
+        polsoc_logger.debug("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
         return HttpResponse(500)
     request_object.process_state = 2
     request_object.save()
@@ -78,7 +86,7 @@ def markAsRemoved(request, request_id):
     try:
         request_object = PolsocRequest.objects.get(id=request_id)
     except Exception as error:
-        polsoc_logger("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
+        polsoc_logger.debug("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
         return HttpResponse(500)
     request_object.delete()
     return HttpResponse(200)

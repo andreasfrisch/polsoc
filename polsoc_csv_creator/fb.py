@@ -133,17 +133,19 @@ def handle_facebook_id(facebook_id, options):
 				options["access_token"],
 				str(pageLimit),
 		)
-		print("url: %s" % url)
+		print("opening url: %s" % url)
 		#response, content = httplib2.Http(
 		#		".cache",
 		#		disable_ssl_certificate_validation = True
 		#).request(url, "GET")
 		#post_page = json.loads(content, "utf-8")
 		response = urllib.request.urlopen(url)
+		print("loading content as JSON")
 		post_page = json.loads(response.readall().decode('utf-8'))
 		#	.replace("false", "False")
 		#	.replace("true", "True")
 		#)
+		print("url content loaded correctly")
 		while not done:
 			print(">>> not done yet")
 			if "data" in post_page:

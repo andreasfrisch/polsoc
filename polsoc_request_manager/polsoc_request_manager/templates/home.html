@@ -105,6 +105,12 @@
 	<hr/>
 	
 	<h3>New request:</h3>
+	<p>Understanding the form:</p>
+	<ul>
+		<li>Query Name: The name of the resulting file</li>
+		<li>Access Token: Automatically filled in, when logged in via the facebook button</li>
+		<li>From Date, To Date: Day in format MM/DD/YYYY, e.g. 01/02/2014 means January 2, 2014</li>
+	</ul>
 	<form method="post" action="">
 	{% csrf_token %}
 	<table>
@@ -115,11 +121,12 @@
 	<hr/>
 	
 	<h3>Existing Requests:</h3>
+	<p>The page will not reload itself. Please give the system around 15 minutes to process a request, then reload the page. Multiple requests can be run concurrently</p>
 	<ul>
 	{% for request in requests %}
 		<li>
 			{{ request.query_name }} ({{request.facebook_id}}) [{{request.from_date}} - {{request.to_date}}]
-			{% if request.process_state == 2 %}<a href="{{request.filename}}">get CSV</a>{% else %}queued{%endif%}
+			{% if request.process_state == 2 %}<a href="api/serveFile/{{request.id}}">get CSV</a>{% else %}queued{%endif%}
 		</li>
 	{% endfor %}
 	</ul>
