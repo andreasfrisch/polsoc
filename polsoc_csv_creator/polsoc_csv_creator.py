@@ -13,7 +13,7 @@ from datetime import datetime
 #API_ROOT = "http://localhost:8000/api/"
 API_ROOT = "http://polsoc.itu.dk/api/"
 GET_NEXT = "getNextInQueue/"
-MARK_COMPLETE = "markAsComplete/"
+MARK_COMPLETE = "markAsCompleted/"
 
 def getNextInQueue():
     request = API_ROOT + GET_NEXT
@@ -37,11 +37,17 @@ def generateCsvFromRequest(request):
         'to_date': datetime.strptime(request['to_date'], date_format).date(),
         'include_comments': request['include_comments']
     }
+    print("opening output file")
     output_csv = open(request['filename'], 'w')
-    output_csv.write(handle_facebook_id(facebook_id, options))
+    print("printing to output file")
+    try:
+        output_csv.write(handle_facebook_id(facebook_id, options))
+    except:
+        output_csv.write("Something went wrong; probably access token time out")
+    print("completed writing output file")
     output_csv.close()
 
-def markRequestAsComplete(request_id):
+def markRequestAsCompleted(request_id):
     request = API_ROOT + MARK_COMPLETE + str(request_id)
     response = urllib.request.urlopen(request)
     if response.status != 200:
