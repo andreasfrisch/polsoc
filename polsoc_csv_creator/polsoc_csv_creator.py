@@ -10,7 +10,6 @@ import json
 from fb import handle_facebook_id
 from datetime import datetime
 
-#API_ROOT = "http://localhost:8000/api/"
 API_ROOT = "http://polsoc.itu.dk/api/"
 GET_NEXT = "getNextInQueue/"
 MARK_COMPLETE = "markAsComplete/"

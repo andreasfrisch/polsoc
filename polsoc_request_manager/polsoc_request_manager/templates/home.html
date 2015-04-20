@@ -119,7 +119,7 @@
 	{% for request in requests %}
 		<li>
 			{{ request.query_name }} ({{request.facebook_id}}) [{{request.from_date}} - {{request.to_date}}]
-			{% if request.has_been_processed %}<a href="{{request.filename}}">get CSV</a>{% else %}queued{%endif%}
+			{% if request.process_state == 2 %}<a href="{{request.filename}}">get CSV</a>{% else %}queued{%endif%}
 		</li>
 	{% endfor %}
 	</ul>

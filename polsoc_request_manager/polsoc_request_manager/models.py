@@ -11,7 +11,7 @@ class PolsocRequest(models.Model):
     include_comments = models.BooleanField(default=False)
     generate_pdf = models.BooleanField(default=False)
     filename = models.CharField(max_length=100)
-    has_been_processed = models.BooleanField(default=False)
+    process_state = models.IntegerField(default=0)
     has_been_downloaded = models.BooleanField(default=False)
     
     def __unicode__(self):

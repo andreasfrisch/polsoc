@@ -51,10 +51,11 @@ def transformRequestToJson(request):
     }
 
 def getNextInQueue(request):
-    next_request = {    }
-    unprocessed = PolsocRequest.objects.filter(has_been_processed=False)
-    if len(unprocessed) > 0:
-        next_request = unprocessed[0]
+    next_request = {}
+	if (len(PolsocRequest.objects.filter(process_state=1)) == 0):
+		unprocessed = PolsocRequest.objects.filter(process_state=0)
+    	if len(unprocessed) > 0:
+    		next_request = unprocessed[0]
     return JsonResponse(transformRequestToJson(next_request), safe=False)
     
 def markAsCompleted(request, request_id):
@@ -64,7 +65,7 @@ def markAsCompleted(request, request_id):
     except Exception as error:
         polsoc_logger("Couldn't find PolsocRequest with Id %s: %s" % (request_id, error))
         return HttpResponse(500)
-    request_object.has_been_processed = True
+    request_object.process_state = 2
     request_object.save()
     return HttpResponse(200)
     
