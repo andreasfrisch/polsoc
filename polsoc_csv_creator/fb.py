@@ -1,11 +1,15 @@
 #-*- coding: utf8 -*-
-import urllib.request
+import urllib3
 import json
+import logging
 from dateutil import parser
+
+http = urllib3.PoolManager()
+logging.basicConfig(filename="csv_creator.log", level=logging.DEBUG)
 
 def handle_comments(post_identifier, options):
 	done = False
-	pageLimit = 200
+	pageLimit = 50
 	
 	comments = [] #storing comments for sorting
 	#url = "https://graph.facebook.com/{facebook_identifier}/comments?access_token={access_token}&limit={limit}&filter=toplevel&fields=from,message,comments.limit(0),like_count,created_time".format(
@@ -19,16 +23,21 @@ def handle_comments(post_identifier, options):
 				limit = pageLimit
 	)
 	print("url: %s" % url)
+	logging.debug("attempting to fetch url: %s" % url)
 	#response, content = httplib2.Http(".cache", disable_ssl_certificate_validation=True).request(url)
-	response = urllib.request.urlopen(url)
-	post_page = json.loads(response.readall().decode('utf-8'))
+	response = http.request('GET', url)
+	logging.debug("fetched url, decoding..")
+	post_page = json.loads(response.data.decode('utf-8'))
+	logging.debug("..done decoding and loading url as JSON")
 	#post_page = json.loads(content, "utf-8")
 	while not done:
 		if not "data" in post_page:
 			done = True
+			logging.debug("no 'data' in page")
 			break
 		if post_page["data"] == []:
 			done = True
+			logging.debug("empty 'data' in page")
 			break
 		for comment in post_page['data']:
 			if "created_time" in comment:
@@ -38,13 +47,15 @@ def handle_comments(post_identifier, options):
 				url = post_page["paging"]["next"]
 				#response, content = httplib2.Http(".cache", disable_ssl_certificate_validation=True).request(url)
 				#post_page = json.loads(content, "utf-8")
-				response = urllib.request.urlopen(url)
-				post_page = json.loads(response.readall().decode('utf-8'))
+				response = http.request('GET', url)
+				post_page = json.loads(response.data.decode('utf-8'))
 			else:
 				done = True
+				logging.debug("no 'next' in 'paging' in page. We are done")
 				break
 		else:
 			done = True
+			logging.debug("no 'paging' in page. We are done")
 			break
 
 	##sorting comments by timestamp
@@ -69,6 +80,7 @@ def handle_comments(post_identifier, options):
 		except:
 			comment_string += ","
 			print(">>> Error in comment")
+			logging.warn("Error in comment: %s, ignoring!" % comment_object)
 			#print post
 			#print "<<<"
 		return_text += '%s\n' % comment_string #reverses comment order
@@ -87,8 +99,8 @@ def get_likes(post_identifier, options):
 	#		.replace("false", "False")
 	#		.replace("true", "True")
 	#	)
-	response = urllib.request.urlopen(url)
-	post_page = json.loads(response.readall().decode('utf-8'))#.replace("false", "False").replace("true", "True"))
+	response = http.request('GET', url)
+	post_page = json.loads(response.data.decode('utf-8'))#.replace("false", "False").replace("true", "True"))
 	if "summary" in post_page:
 		return "%s" % post_page["summary"]["total_count"]
 	else:
@@ -124,6 +136,8 @@ def handle_facebook_post(post, options):
 
 
 def handle_facebook_id(facebook_id, options):
+	print("Handle Facebook Id: %s, with options: %s" % (facebook_id, options))
+	logging.debug("Handle Facebook ID: %s, with options: %s" % (facebook_id, options))
 	result_string = ""
 	if facebook_id is not "":
 		done = False
@@ -134,14 +148,19 @@ def handle_facebook_id(facebook_id, options):
 				str(pageLimit),
 		)
 		print("opening url: %s" % url)
+		logging.debug("opening url: %s" % url)
 		#response, content = httplib2.Http(
 		#		".cache",
 		#		disable_ssl_certificate_validation = True
 		#).request(url, "GET")
 		#post_page = json.loads(content, "utf-8")
-		response = urllib.request.urlopen(url)
-		print("loading content as JSON")
-		post_page = json.loads(response.readall().decode('utf-8'))
+		response = http.request('GET', url)
+		content = response.data.decode('utf-8')
+		print("recieved content: %s" % content)
+		logging.debug("recieved content: %s" % content)
+		post_page = json.loads(content)
+		print("successfully loaded json content as python")
+		logging.debug("successfully loaded json content as python")
 		#	.replace("false", "False")
 		#	.replace("true", "True")
 		#)
@@ -150,6 +169,7 @@ def handle_facebook_id(facebook_id, options):
 			print(">>> not done yet")
 			if "data" in post_page:
 				print(">>>>\t post has data")
+				logging.debug("post has data")
 				if post_page["data"] == []:
 					print("ERROR >>>>\tERROR: data is empty <<< ERROR")
 					done = True
@@ -157,29 +177,34 @@ def handle_facebook_id(facebook_id, options):
 				for post in post_page["data"]:
 					post_created_time = parser.parse(post["created_time"]).date()
 					print(">> >> Date comparisons (post, from, to)", post_created_time, options["from_date"], options["to_date"])
+					logging.debug(">> >> Date comparisons (post, from, to)", post_created_time, options["from_date"], options["to_date"])
 					if post_created_time < options["from_date"]:
 						done = True
 						continue
 					if post_created_time > options["from_date"] \
 							and post_created_time < options["to_date"]:
 						print(">>> >>>handling facebook post: ", post)
+						logging.debug(">>> >>>handling facebook post: ", post)
 						result_string += handle_facebook_post(post, options)
 				if "paging" in post_page:
 					if "next" in post_page["paging"]:
 						url = post_page["paging"]["next"]
 						print('>>> next URL: ',url)
+						logging.debug("next url: %s" % url)
 						#response, content = httplib2.Http(
 						#		".cache",
 						#		disable_ssl_certificate_validation = True
 						#).request(url, "GET")
 						#post_page = json.loads(content, "utf-8")
-						response = urllib.request.urlopen(url)
-						post_page = json.loads(response.readall().decode('utf-8'))
+						response = http.request('GET', url)
+						post_page = json.loads(response.data.decode('utf-8'))
 					else:
 						done = True
+						logging.debug("No 'next' in 'paging' in page. we are done!")
 						break
 				else:
 					print("ERROR >>>>\tERROR: no paging <<< ERROR")
+					logging.debug("No 'paging' in page. we are done!")
 					done = True
 					continue
 			else:

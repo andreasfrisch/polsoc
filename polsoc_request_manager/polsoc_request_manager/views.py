@@ -59,12 +59,16 @@ def transformRequestToJson(request):
     }
 
 def getNextInQueue(request):
-    next_request = {}
-	if (len(PolsocRequest.objects.filter(process_state=1)) == 0):
-		unprocessed = PolsocRequest.objects.filter(process_state=0)
-    	if len(unprocessed) > 0:
-    		next_request = unprocessed[0]
-    return JsonResponse(transformRequestToJson(next_request), safe=False)
+    next_request = None
+    if (len(PolsocRequest.objects.filter(process_state=1)) == 0):
+        unprocessed = PolsocRequest.objects.filter(process_state=0)
+        if len(unprocessed) > 0:
+            next_request = unprocessed[0]
+            next_request.processed_state = 1
+            next_request.save()
+    if next_request:
+        return JsonResponse(transformRequestToJson(next_request), safe=False)
+    return None
     
 def markAsCompleted(request, request_id):
     request_object = None
