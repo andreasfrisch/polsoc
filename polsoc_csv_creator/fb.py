@@ -7,7 +7,7 @@ from dateutil import parser
 http = urllib3.PoolManager()
 logging.basicConfig(filename="csv_creator.log", level=logging.DEBUG)
 
-def handle_comments(post_identifier, options):
+def handle_comments(post_identifier, options, comment_indent_level=1):
 	done = False
 	pageLimit = 50
 	
@@ -17,7 +17,7 @@ def handle_comments(post_identifier, options):
 	#			access_token = options["access_token"],
 	#			limit = pageLimit
 	#)
-	url = "https://graph.facebook.com/{facebook_identifier}/comments?access_token={access_token}&limit={limit}&filter=stream&fields=from,message,like_count,created_time".format(
+	url = "https://graph.facebook.com/{facebook_identifier}/comments?access_token={access_token}&limit={limit}&filter=toplevel&fields=from,message,like_count,created_time".format(
 				facebook_identifier = post_identifier,
 				access_token = options["access_token"],
 				limit = pageLimit
@@ -63,7 +63,8 @@ def handle_comments(post_identifier, options):
 
 	return_text = ""
 	for timestamp, comment_object in comments:
-		comment_string = "comment,"
+		nextlvl_comment_count, nextlvl_comment_string = handle_comments(comment_object['id'], options, comment_indent_level+1)
+		comment_string = "-".join(["comment"] * comment_indent_level) + "," # fucking magic
 		
 		comment_string += "%s," % comment_object["from"]["name"]
 		comment_string += "%s," % comment_object["from"]["id"]
@@ -71,7 +72,7 @@ def handle_comments(post_identifier, options):
 		comment_string += u"%s," % comment_datetime.time() # time (hour)
 		comment_string += u"%s," % comment_datetime.date() # time (date)
 		comment_string += "%s," % comment_object["like_count"]
-		comment_string += "," #todo: comments_count?
+		comment_string += "%s," % nextlvl_comment_count
 		try:
 			comment_string += "\"%s\"," % comment_object["message"] \
 					.replace('"',"'") \
@@ -83,7 +84,7 @@ def handle_comments(post_identifier, options):
 			logging.warn("Error in comment: %s, ignoring!" % comment_object)
 			#print post
 			#print "<<<"
-		return_text += '%s\n' % comment_string #reverses comment order
+		return_text += '%s\n%s' % (comment_string, nextlvl_comment_string) #reverses comment order
 
 	return len(comments), return_text
 
