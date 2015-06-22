@@ -131,7 +131,6 @@ def handle_facebook_post(post, options):
 		print(">>> Error in post")
 	post_string += u"\n"
 	post_string += comment_string
-	print(">>> >>> >>>facebook post returns: ", post_string)
 	return post_string
 
 
@@ -156,8 +155,8 @@ def handle_facebook_id(facebook_id, options):
 		#post_page = json.loads(content, "utf-8")
 		response = http.request('GET', url)
 		content = response.data.decode('utf-8')
-		print("recieved content: %s" % content)
-		logging.debug("recieved content: %s" % content)
+		#print("recieved content: %s" % content)
+		#logging.debug("recieved content: %s" % content)
 		post_page = json.loads(content)
 		print("successfully loaded json content as python")
 		logging.debug("successfully loaded json content as python")
@@ -176,15 +175,15 @@ def handle_facebook_id(facebook_id, options):
 					continue
 				for post in post_page["data"]:
 					post_created_time = parser.parse(post["created_time"]).date()
-					print(">> >> Date comparisons (post, from, to)", post_created_time, options["from_date"], options["to_date"])
-					logging.debug(">> >> Date comparisons (post, from, to)", post_created_time, options["from_date"], options["to_date"])
+					#print(">> >> Date comparisons (post, from, to)", post_created_time, options["from_date"], options["to_date"])
+					#logging.debug(">> >> Date comparisons (post, from, to)", post_created_time, options["from_date"], options["to_date"])
 					if post_created_time < options["from_date"]:
 						done = True
 						continue
 					if post_created_time > options["from_date"] \
 							and post_created_time < options["to_date"]:
-						print(">>> >>>handling facebook post: ", post)
-						logging.debug(">>> >>>handling facebook post: ", post)
+						#print(">>> >>>handling facebook post: ", post)
+						#logging.debug(">>> >>>handling facebook post: ", post)
 						result_string += handle_facebook_post(post, options)
 				if "paging" in post_page:
 					if "next" in post_page["paging"]:
@@ -211,5 +210,5 @@ def handle_facebook_id(facebook_id, options):
 				done = True
 				continue
 		print(">>> done!")
-	print("result string: ", result_string)
+	#print("result string: ", result_string)
 	return result_string

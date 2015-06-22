@@ -25,16 +25,14 @@ def home(request):
         if form.is_valid():
             new_request = form.save(commit=False)
             new_request.filename = generateFilenameFromForm(request.POST)
-
-			url = "https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}&client_secret={app_secret}&fb_exchange_token={short_lived_token}".format(
-						app_id = APP_ID,
-						app_secret = APP_SECRET,
-						short_lived_token = new_request.facebook_access_token
-			)
-		    response = http.request('GET', url)
-			long_lived_token = ''.join((response.data.decode('utf-8').split('=')[1:]))
-			new_request.facebook_access_token = long_lived_token
-			
+            url = "https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}&client_secret={app_secret}&fb_exchange_token={short_lived_token}".format(
+                  app_id = APP_ID,
+                  app_secret = APP_SECRET,
+                  short_lived_token = new_request.facebook_access_token
+            )
+            response = http.request('GET', url)
+            long_lived_token = ''.join((response.data.decode('utf-8').split('=')[1:]))
+            new_request.facebook_access_token = long_lived_token		
             new_request.save()
             return redirect("home")            
         else:
