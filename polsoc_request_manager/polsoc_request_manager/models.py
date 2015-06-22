@@ -15,7 +15,7 @@ class PolsocRequest(models.Model):
     has_been_downloaded = models.BooleanField(default=False)
     
     def __unicode__(self):
-        return unicode("fluttershy")
+        return unicode(self.query_name)
 
 class PolsocRequestForm(ModelForm):
     class Meta:
